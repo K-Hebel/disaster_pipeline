@@ -31,9 +31,6 @@ def clean_data(df):
     # drop duplicates
     df=df.drop_duplicates()
 
-    # Remove the 'child_alone' category as it contains no values
-    df.drop(['child_alone'], axis=1)
-
     # Replace the '2' value in the 'related' column with '1'
     # for 'related' column, replace the 2 value with 1
     df['related'] =df['related'].replace(2,1)
