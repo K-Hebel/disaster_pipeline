@@ -1,7 +1,7 @@
 import sys
 import pandas as pd
 import numpy as np
-from sqlalchemy import create_engine
+from sqlite3 as sql
 
 def load_data(messages_filepath, categories_filepath):
     messages = pd.read_csv(messages_filepath)
@@ -9,18 +9,19 @@ def load_data(messages_filepath, categories_filepath):
     # merge datasets
     df = messages.merge(categories, on='id')
 
+    return df
+
 def clean_data(df):
     # create a dataframe of the 36 individual category columns
     categories = df.categories.str.split(';',expand=True)
     categories.columns=categories.iloc[0].str.strip('- 10')
 
     # set each value to be the last character of the string
-    for column in categories:
-        for i in range(categories[column].shape[0]):
-            categories[column][i] =pd.to_numeric(categories[column][i][-1])
+    for column in categories.columns:
+        categories[column]= categories[column].str[-1].astype('int32')
 
     # drop the original categories column from `df`
-    df=df.drop('categories', axis=1)
+    df=df.drop(['categories','original', 'genre'] , axis=1)
 
     # concatenate the original dataframe with the new `categories` dataframe
     df = pd.concat([df, categories], axis=1)
@@ -28,13 +29,18 @@ def clean_data(df):
     # drop duplicates
     df=df.drop_duplicates()
 
+    #replace the '2' value in the 'related' column with '1'
+    # for 'related' column, replace the 2 value with 1
+    df['related'] =df['related'].replace(2,1)
+
     return df
 
 def save_data(df, database_filepath):
     #save clean data to sqlite database
-    engine = create_engine('sqlite:///'+database_filepath, echo=True)
-    df.to_sql(df, engine.connect(), if_exists='replace')
-    engine.close()
+    conn = sql.connect(database_filepath)
+    df.to_sql(df, conn, if_exists='replace', index= False)
+
+
 
 
 def main():
