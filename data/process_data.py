@@ -6,21 +6,23 @@ from sqlite3 as sql
 def load_data(messages_filepath, categories_filepath):
     messages = pd.read_csv(messages_filepath)
     categories =pd.read_csv(categories_filepath)
-    # merge datasets
+    # Merge datasets
     df = messages.merge(categories, on='id')
 
     return df
 
 def clean_data(df):
-    # create a dataframe of the 36 individual category columns
+    # Create a dataframe of the 36 individual category columns
     categories = df.categories.str.split(';',expand=True)
     categories.columns=categories.iloc[0].str.strip('- 10')
 
-    # set each value to be the last character of the string
+    # Set each value to be the last character of the string
     for column in categories.columns:
         categories[column]= categories[column].str[-1].astype('int32')
 
-    # drop the original categories column from `df`
+    # Drop the 'categories' column from `df`
+    # Drop "original" and 'genre' columns as they are not part of the
+    # analysis
     df=df.drop(['categories','original', 'genre'] , axis=1)
 
     # concatenate the original dataframe with the new `categories` dataframe
@@ -29,14 +31,17 @@ def clean_data(df):
     # drop duplicates
     df=df.drop_duplicates()
 
-    #replace the '2' value in the 'related' column with '1'
+    # Remove the 'child_alone' category as it contains no values
+    df.drop(['child_alone'], axis=1)
+
+    # Replace the '2' value in the 'related' column with '1'
     # for 'related' column, replace the 2 value with 1
     df['related'] =df['related'].replace(2,1)
 
     return df
 
 def save_data(df, database_filepath):
-    #save clean data to sqlite database
+    # Save clean data to sqlite database
     conn = sql.connect(database_filepath)
     df.to_sql(df, conn, if_exists='replace', index= False)
 
