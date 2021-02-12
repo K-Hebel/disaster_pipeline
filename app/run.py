@@ -38,20 +38,28 @@ model = joblib.load("../models/classifier.pkl")
 @app.route('/index')
 def index():
 
-    # extract data needed for visuals
-    # TODO: Below is an example - modify to extract data for your own visuals
-    genre_counts = df.groupby('genre').count()['message']
-    genre_names = list(genre_counts.index)
+    # Data for Genre Counts
+    genre_counts = df.groupby('genre').count()['message'].sort_values(ascending=False)
+    genre_names = list(genre_counts.index.str.title())
 
-    # create visuals
-    # TODO: Below is an example - modify to create your own visuals
-    graphs = [
+    #Data for Top 5 Categories of All Messages
+    top_5_category_counts = df.drop(['message','original','genre','id'], axis=1).sum().sort_values(ascending=False).head(5)
+    top_5_category_names = list(top_5_category_counts.index.str.title())
+
+    #Data for related column by genre
+    related_col=df[df['related'] ==1].groupby(['genre']).related.sum().sort_values(ascending=True)
+
+    #Landing page graphs
+     graphs = [
         {
+            #Bar Graph of Database Genres
             'data': [
                 Bar(
                     x=genre_names,
-                    y=genre_counts
+                    y=genre_counts,
+                    marker=dict(color= ['176BA0', '19AADE','1DE4BD'])
                 )
+
             ],
 
             'layout': {
@@ -63,8 +71,56 @@ def index():
                     'title': "Genre"
                 }
             }
+
+        },
+        {#Bar Graph of Top Five Message Cateorgies
+            'data': [
+                Bar(
+                    x=top_5_category_names,
+                    y=top_5_category_counts,
+                    marker=dict(color=["teal", 'goldenrod','salmon','orange','seagreen'])
+
+                )
+
+            ],
+
+            'layout': {
+                'title': 'Top 5 Message Categories',
+                'yaxis': {
+                    'title': "Count"
+                },
+                'xaxis': {
+                    'title': "Categories"
+                }
+            }
+
+        },
+        { #Bar Graph of'Related' category, shown by Genres
+            'data': [
+                Bar(
+                   x=related_col,
+                   y=list(related_col.index.str.title()),
+                    orientation ='h',
+                   marker=dict(color=["darkblue", 'blue','lightblue','orange','seagreen'],
+                   )
+
+                )
+
+            ],
+
+            'layout': {
+                'title': 'Genre of Related Messages',
+                'yaxis': {
+                    'title': "Genre"
+                },
+                'xaxis': {
+                    'title': "Count of Messages"
+                }
+            }
+
         }
     ]
+    
 
     # encode plotly graphs in JSON
     ids = ["graph-{}".format(i) for i, _ in enumerate(graphs)]
