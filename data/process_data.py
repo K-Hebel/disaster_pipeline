@@ -40,7 +40,7 @@ def clean_data(df):
 def save_data(df, database_filepath):
     # Save clean data to sqlite database
     conn = sql.connect(database_filepath)
-    df.to_sql(df, conn, if_exists='replace', index= False)
+    df.to_sql(database_filename[5:-3], conn, if_exists='replace', index=False)
 
 
 
