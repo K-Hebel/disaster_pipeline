@@ -58,7 +58,7 @@ def tokenize(text):
     #remove stopwords and lemmatize tokens
     lemmatizer=WordNetLemmatizer()
 
-    clean_tokens =[lemmatizer.lemmatize(word) for word in tokens if word not in stopwords.word('english')]
+    clean_tokens =[lemmatizer.lemmatize(word) for word in tokens if word not in stopwords.words('english')]
 
     return clean_tokens
 
