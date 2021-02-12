@@ -50,7 +50,7 @@ def index():
     related_col=df[df['related'] ==1].groupby(['genre']).related.sum().sort_values(ascending=True)
 
     #Landing page graphs
-     graphs = [
+    graphs = [
         {
             #Bar Graph of Database Genres
             'data': [

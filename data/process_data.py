@@ -49,10 +49,10 @@ def clean_data(df):
     return df
 
 def save_data(df, database_filepath):
-        ''' Save cleaned dataframe ('df') to SQLite3 database
+    ''' Save cleaned dataframe ('df') to SQLite3 database
 
-            no retun
-            '''
+        no retun
+    '''
     # Save clean data to sqlite database
     conn = sql.connect(database_filepath)
     df.to_sql(database_filepath[5:-3], conn, if_exists='replace', index=False)
