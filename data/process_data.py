@@ -1,18 +1,25 @@
 import sys
 import pandas as pd
 import numpy as np
-from sqlite3 as sql
+import sqlite3 as sql
 
 def load_data(messages_filepath, categories_filepath):
+    ''' Load 2 .csv data files and merge them into one dataframe
+        return dataframe
+    '''
     messages = pd.read_csv(messages_filepath)
     categories =pd.read_csv(categories_filepath)
-    # Merge datasets
+
     df = messages.merge(categories, on='id')
 
     return df
 
 def clean_data(df):
-    # Create a dataframe of the 36 individual category columns
+    ''' Create a dataframe of the 36 individual category columns from the
+        'categories' dataframe.  Data is clean of leading characters and
+        converted to numerical type so all category data is binary. Duplication
+        is also eliminated'''
+
     categories = df.categories.str.split(';',expand=True)
     categories.columns=categories.iloc[0].str.strip('- 10')
 
@@ -38,14 +45,19 @@ def clean_data(df):
     return df
 
 def save_data(df, database_filepath):
+        ''' Save cleaned dataframe ('df') as a SQLite3 database
+            '''
     # Save clean data to sqlite database
     conn = sql.connect(database_filepath)
-    df.to_sql(database_filename[5:-3], conn, if_exists='replace', index=False)
+    df.to_sql(database_filepath[5:-3], conn, if_exists='replace', index=False)
 
 
 
 
 def main():
+    ''' Main program instructions where functions are processed.  User
+        process updates are written here
+    '''
     if len(sys.argv) == 4:
 
         messages_filepath, categories_filepath, database_filepath = sys.argv[1:]
