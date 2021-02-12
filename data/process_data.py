@@ -23,7 +23,7 @@ def clean_data(df):
     # Drop the 'categories' column from `df`
     # Drop "original" and 'genre' columns as they are not part of the
     # analysis
-    df=df.drop(['categories','original', 'genre'] , axis=1)
+    df=df.drop(['categories'] , axis=1)
 
     # concatenate the original dataframe with the new `categories` dataframe
     df = pd.concat([df, categories], axis=1)
