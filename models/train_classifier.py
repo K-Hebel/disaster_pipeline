@@ -22,6 +22,14 @@ nltk.download(['punkt', 'stopwords', 'wordnet'])
 
 
 def load_data(database_filepath):
+    ''' Loads SQLite datebase and separates feature and target database
+        X = dataframe of Messages
+        y = dataframe of 36 message categories wtih binary data
+        category_names = y column names
+
+        return X, y and category_names
+    '''
+
     # load data from database
     conn = sql.connect(database_filepath)
     df = pd.read_sql("SELECT * FROM {}".format( database_filepath[5:-3]),conn)
@@ -36,6 +44,13 @@ def load_data(database_filepath):
     return X,y,category_names
 
 def tokenize(text):
+    ''' Process each message by :
+        1- Normalizing it (lower case and strip punctuation and stopwords)
+        2- Creating tokens
+        3- Lemmatizing each word in the clean_tokens
+
+        return clean_tokens
+    '''
     #normalize text: remove punctuation and make lower case
     text= re.sub(r'[^a-zA-Z0-9]',' ', text.lower())
     tokens = word_tokenize(text)
@@ -43,32 +58,58 @@ def tokenize(text):
     #remove stopwords and lemmatize tokens
     lemmatizer=WordNetLemmatizer()
 
-    clean_tokens =[lemmatizer.lemmatize(word) for word in tokens]
+    clean_tokens =[lemmatizer.lemmatize(word) for word in tokens if word not in stopwords.word('english')]
 
     return clean_tokens
 
 
 def build_model():
+    ''' Build machine learning pipeline using the MultiOutputClassifier given the list of target variables/
+        category names
+
+        return model
+    '''
     #Instansiate the ML pipeline
-    model = Pipeline([('vect', CountVectorizer(tokenizer=tokenize, stop_words='english', max_df=0.5, ngram_range=(1,1))),
+    model = Pipeline([('vect', CountVectorizer(tokenizer=tokenize, max_df=0.5, ngram_range=(1,2))),
                     ('tfidf', TfidfTransformer(smooth_idf=False)),
                     ('clf', MultiOutputClassifier(RandomForestClassifier()))])
 
     return model
 
 def evaluate_model(model, X_test, y_test, category_names):
-    #Predict with ML pipeline
-    y_pred= model.predict(X_test)
+    ''' Evalute the model and optimize model parameters using GridSearchCV
+        print classification report for each category
+        print GridSearch best_params_
+    '''
 
-    return y_pred
+    from sklearn.model_selection  import GridSearchCV
+
+    #Predict with ML pipeline and print classification report
+    y_pred= model.predict(X_test)
+    for i in range(len(category_names)):
+      print(category_names[i])
+      print(classification_report(y_test[category_names[i]], y_pred[:, i]))
+
+    param_grid= {
+        'vect__ngram_range': [(1,1),(1,2)]
+    }
+
+    cv=GridSearchCV(pipeline, param_grid, cv=2)
+    cv.fit(X_train,y_train)
+    print('GridSearch Best Parameter:  ', cv.best_params_)
+
 
 def save_model(model, model_filepath):
+    ''' Save model as a pickle file
+    '''
 
     pickle.dump(model, open(model_filepath, 'wb'))
 
 
 
 def main():
+    ''' Main program from which all functions are implemented
+    '''
     if len(sys.argv) == 3:
         database_filepath, model_filepath = sys.argv[1:]
         print('Loading data...\n    DATABASE: {}'.format(database_filepath))
