@@ -5,6 +5,7 @@ import sqlite3 as sql
 
 def load_data(messages_filepath, categories_filepath):
     ''' Load 2 .csv data files and merge them into one dataframe
+
         return dataframe
     '''
     messages = pd.read_csv(messages_filepath)
@@ -18,7 +19,10 @@ def clean_data(df):
     ''' Create a dataframe of the 36 individual category columns from the
         'categories' dataframe.  Data is clean of leading characters and
         converted to numerical type so all category data is binary. Duplication
-        is also eliminated'''
+        is also eliminated
+
+        return clean dataframe
+        '''
 
     categories = df.categories.str.split(';',expand=True)
     categories.columns=categories.iloc[0].str.strip('- 10')
@@ -45,7 +49,9 @@ def clean_data(df):
     return df
 
 def save_data(df, database_filepath):
-        ''' Save cleaned dataframe ('df') as a SQLite3 database
+        ''' Save cleaned dataframe ('df') to SQLite3 database
+
+            no retun
             '''
     # Save clean data to sqlite database
     conn = sql.connect(database_filepath)
