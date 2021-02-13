@@ -15,6 +15,10 @@ from sqlalchemy import create_engine
 app = Flask(__name__)
 
 def tokenize(text):
+    ''' Tokenize, normalize and clean user messages entered directly into the web app
+
+        return clean tokens
+    '''
     tokens = word_tokenize(text)
     lemmatizer = WordNetLemmatizer()
 
@@ -37,7 +41,12 @@ model = joblib.load("../models/classifier.pkl")
 @app.route('/')
 @app.route('/index')
 def index():
+    ''' Use the dataframe queries below for the data used in the charts shown
+        on the app landing webpage
 
+        returns bar charts of Message Genre Counts, Top 5 message Categories and
+                a chart of 'related' category messages, grouped by genre
+    '''
     # Data for Genre Counts
     genre_counts = df.groupby('genre').count()['message'].sort_values(ascending=False)
     genre_names = list(genre_counts.index.str.title())
@@ -149,6 +158,8 @@ def go():
 
 
 def main():
+    ''' Function to launch app
+    '''
     app.run(host='0.0.0.0', port=3001, debug=True)
 
 
